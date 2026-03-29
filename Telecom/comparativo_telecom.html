@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Planos de Internet Mobile</title>
+    <style>
+        /* ==========================================================================
+           Reset Global e Variáveis Base
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================================================
+           Cabeçalho Principal (Header)
+           ========================================================================== */
+        header {
+            background: white;
+            padding: 20px 0;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #15803d;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 12px 12px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-weight: bold;
+            font-size: 24px;
+            color: #111;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ==========================================================================
+           Layout Principal
+           ========================================================================== */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* ==========================================================================
+           Componentes: Cartões (Cards) e Formulários
+           ========================================================================== */
+        .form-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-card h2 {
+            font-size: 28px;
+            color: #111;
+            margin-bottom: 10px;
+        }
+
+        .form-card p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .form-group small {
+            display: block;
+            color: #999;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-symbol {
+            position: absolute;
+            left: 16px;
+            font-size: 18px;
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 14px 16px 14px 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        select {
+            padding-left: 16px;
+        }
+
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #15803d;
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+        }
+
+        .info-box {
+            background: #f0fdf4;
+            border-left: 4px solid #15803d;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        .info-box strong {
+            color: #15803d;
+        }
+
+        .btn-compare {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+        }
+
+        .btn-compare:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(21, 128, 61, 0.4);
+        }
+
+        .btn-compare:active {
+            transform: translateY(0);
+        }
+
+        /* ==========================================================================
+           Painel de Resultados e Tabelas
+           ========================================================================== */
+        .results-card {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+            grid-column: 1 / -1; /* Ocupa a largura total no grid de duas colunas */
+        }
+
+        .results-card.show {
+            display: block;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-card h3 {
+            font-size: 32px;
+            color: #111;
+            margin-bottom: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .comparison-table td {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .comparison-table td:first-child {
+            text-align: left;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #111;
+            font-size: 16px;
+        }
+
+        .value-current {
+            color: #666;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .value-new-plan {
+            color: #15803d;
+            font-weight: bold;
+            font-size: 28px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #15803d;
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        .advantage {
+            background: #f0fdf4;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #166534;
+            margin-top: 12px;
+            border-left: 4px solid #15803d;
+        }
+
+        .advantage strong {
+            color: #15803d;
+            font-size: 14px;
+        }
+
+        .consumption-info {
+            background: #fffbeb;
+            border-left: 4px solid #fbbf24;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            font-size: 15px;
+            color: #92400e;
+            line-height: 1.8;
+        }
+
+        .consumption-info strong {
+            color: #d97706;
+            font-size: 16px;
+        }
+
+        /* ==========================================================================
+           Estados de Erro e CTA (Call to Action)
+           ========================================================================== */
+        .error-message {
+            background: #fee2e2;
+            border-left: 4px solid #dc2626;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 60px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta-section h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+            margin-bottom: 32px;
+            opacity: 0.95;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background: white;
+            color: #15803d;
+            padding: 14px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ==========================================================================
+           Responsividade (Mobile)
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .form-card,
+            .results-card {
+                padding: 24px;
+            }
+
+            .form-card h2,
+            .results-card h3 {
+                font-size: 24px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 16px 12px;
+                font-size: 13px;
+            }
+
+            .value-new-plan {
+                font-size: 22px;
+            }
+
+            .value-current {
+                font-size: 16px;
+            }
+
+            body {
+                padding: 12px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #15803d;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-icon">💡</div>
+                <div>
+                    <div class="logo-text">TechMobile Telecom</div>
+                    <div class="logo-subtitle">Comparador de Planos Mobile</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="form-card">
+                <h2>Compare Sua Internet</h2>
+                <p>Veja as vantagens de um plano que acumula dados para o mês seguinte.</p>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <form id="comparatorForm">
+                    <div class="form-group">
+                        <label for="currentPlan">Seu Plano Atual (GB)</label>
+                        <div class="input-wrapper">
+                            <span class="input-symbol">📱</span>
+                            <input 
+                                type="number" 
+                                id="currentPlan" 
+                                placeholder="Ex: 20" 
+                                step="1" 
+                                min="1" 
+                                required
+                            >
+                        </div>
+                        <small>Insira a quantidade de GB do seu plano atual</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="renewalDay">Dia da Renovação do Plano</label>
+                        <div class="input-wrapper">
+                            <span class="input-symbol">📅</span>
+                            <input 
+                                type="number" 
+                                id="renewalDay" 
+                                placeholder="Ex: 12" 
+                                step="1" 
+                                min="1" 
+                                max="31" 
+                                required
+                            >
+                        </div>
+                        <small>Qual dia do mês seu plano se renova (1-31)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currentInternet">Internet Disponível Agora (GB)</label>
+                        <div class="input-wrapper">
+                            <span class="input-symbol">⚡</span>
+                            <input 
+                                type="number" 
+                                id="currentInternet" 
+                                placeholder="Ex: 8" 
+                                step="0.1" 
+                                min="0" 
+                                required
+                            >
+                        </div>
+                        <small>Quanto de internet você ainda tem disponível neste ciclo</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPlan">Plano Desejado</label>
+                        <div class="input-wrapper">
+                            <span class="input-symbol"></span>
+                            <select id="newPlan" required>
+                                <option value="">Selecione um plano</option>
+                                <option value="11">Plano Start - 11GB (R$ 54,90)</option>
+                                <option value="15">Plano Mega - 15GB (R$ 59,90)</option>
+                                <option value="20">Plano Giga - 20GB (R$ 69,90)</option>
+                                <option value="28">Plano Ultra - 28GB (R$ 79,90)</option>
+                                <option value="50">Plano Infinity - 50GB (R$ 99,90)</option>
+                            </select>
+                        </div>
+                        <small>Escolha o novo plano que você gostaria de simular</small>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Dica:</strong> Na nossa operadora, você não perde dados! A internet que sobrar acumula para o próximo mês.
+                    </div>
+
+                    <button type="submit" class="btn-compare">Comparar Agora</button>
+                </form>
+            </div>
+
+            <div class="results-card" id="resultsCard">
+                <h3>Resultado da Comparação</h3>
+
+                <div class="consumption-info" id="consumptionInfo"></div>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Período</th>
+                            <th>Operadora Atual</th>
+                            <th>Nova Operadora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="metric-label">3 Meses - Acúmulo</td>
+                            <td>
+                                <div class="value-current" id="current3Months">-</div>
+                            </td>
+                            <td>
+                                <div class="value-new-plan" id="newPlan3Months">-</div>
+                                <div class="advantage" id="advantage3Months"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="metric-label">6 Meses - Acúmulo</td>
+                            <td>
+                                <div class="value-current" id="current6Months">-</div>
+                            </td>
+                            <td>
+                                <div class="value-new-plan" id="newPlan6Months">-</div>
+                                <div class="advantage" id="advantage6Months"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="metric-label">1 Ano - Acúmulo</td>
+                            <td>
+                                <div class="value-current" id="current1Year">-</div>
+                            </td>
+                            <td>
+                                <div class="value-new-plan" id="newPlan1Year">-</div>
+                                <div class="advantage" id="advantage1Year"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <section class="cta-section">
+            <h2>Pronto para Otimizar Seus Dados?</h2>
+            <p>Fale com um de nossos consultores e pare de perder a internet que você já pagou.</p>
+            <a href="#" target="_blank" class="cta-btn">💬 Falar com Consultor</a>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-bottom">
+            <p>Consultoria em Telecomunicações</p>
+            <p>Projeto de Demonstração (Portfólio)</p>
+            <p>Desenvolvido por Adriano Luz - <a href="https://linkedin.com/in/adrianoluz-web" target="_blank">Linkedin</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Mapeamento de elementos do DOM
+        const form = document.getElementById('comparatorForm');
+        const resultsCard = document.getElementById('resultsCard');
+        const errorMessage = document.getElementById('errorMessage');
+        const consumptionInfo = document.getElementById('consumptionInfo');
+
+        /**
+         * Exibe uma mensagem de erro visual para o usuário
+         * @param {string} message - A mensagem a ser exibida
+         */
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        /**
+         * Limpa o estado de erro do formulário
+         */
+        function clearError() {
+            errorMessage.classList.remove('show');
+        }
+
+        /**
+         * Calcula há quantos dias o ciclo atual de internet iniciou
+         * @param {number} renewalDay - O dia do mês em que o plano renova
+         * @returns {number} Quantidade de dias decorridos (mínimo de 1 dia)
+         */
+        function getDaysSinceRenewal(renewalDay) {
+            const today = new Date();
+            const currentDay = today.getDate();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            let lastRenewal;
+            
+            if (currentDay >= renewalDay) {
+                // A renovação já ocorreu neste mês atual
+                lastRenewal = new Date(currentYear, currentMonth, renewalDay);
+            } else {
+                // A renovação ocorreu no mês anterior
+                lastRenewal = new Date(currentYear, currentMonth - 1, renewalDay);
+            }
+
+            const diffTime = today - lastRenewal;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+            return Math.max(1, diffDays); // Evita divisão por zero caso o cálculo retorne 0
+        }
+
+        /**
+         * Estima o consumo de dados médio por dia com base no uso do ciclo atual
+         */
+        function calculateDailyConsumption(currentPlan, currentInternet, daysPassed) {
+            if (daysPassed === 0) return 0;
+            const consumed = currentPlan - currentInternet; // O que foi gasto até agora
+            return consumed / daysPassed;
+        }
+
+        /**
+         * Converte um valor numérico para uma string formatada em Gigabytes (GB)
+         */
+        function formatGB(value) {
+            return value.toFixed(2) + ' GB';
+        }
+
+        /**
+         * Retorna um elemento HTML destacando a vantagem em GB da nova operadora
+         */
+        function calculateAdvantage(current, newPlanAmount) {
+            const diff = newPlanAmount - current;
+            if (diff > 0) {
+                return `<strong>+${formatGB(diff)}</strong> a mais que a atual`;
+            } else if (diff < 0) {
+                return `<strong>${formatGB(Math.abs(diff))}</strong> a menos`;
+            } else {
+                return 'Mesmo resultado';
+            }
+        }
+
+        /**
+         * Função principal de cálculo e projeção temporal
+         */
+        function calculateComparison(currentPlan, renewalDay, currentInternet, newPlanValue) {
+            const daysPassed = getDaysSinceRenewal(renewalDay);
+            const dailyConsumption = calculateDailyConsumption(currentPlan, currentInternet, daysPassed);
+            const daysInMonth = 30; // Aproximação padrão comercial
+            const monthlyConsumption = dailyConsumption * daysInMonth;
+
+            // Feedback analítico sobre o padrão de uso atual do cliente
+            consumptionInfo.innerHTML = `
+                <strong>Análise do seu consumo:</strong><br>
+                Dias desde a última renovação: ${daysPassed} dias<br>
+                Consumo médio diário: ${formatGB(dailyConsumption)}<br>
+                Consumo estimado para o final do mês: ${formatGB(monthlyConsumption)}
+            `;
+
+            // ====================================================================
+            // REGRA DE NEGÓCIO DA OPERADORA ATUAL:
+            // A operadora atual "zera" a franquia no fim do mês. Portanto, o limite 
+            // máximo mensal é sempre estritamente o valor do plano contratado.
+            // ====================================================================
+            const current3Months = currentPlan;
+            const current6Months = currentPlan;
+            const current1Year = currentPlan;
+            
+            // ====================================================================
+            // REGRA DE NEGÓCIO DA NOVA OPERADORA:
+            // A nova operadora permite ACUMULAR o que não foi utilizado para o 
+            // mês seguinte. Simulamos esse acúmulo ao longo dos meses.
+            // ====================================================================
+            
+            // Projeção para 3 meses
+            let newPlan3Months = newPlanValue;
+            for (let i = 0; i < 3; i++) {
+                newPlan3Months = newPlan3Months - monthlyConsumption + newPlanValue;
+            }
+
+            // Projeção para 6 meses
+            let newPlan6Months = newPlanValue;
+            for (let i = 0; i < 6; i++) {
+                newPlan6Months = newPlan6Months - monthlyConsumption + newPlanValue;
+            }
+
+            // Projeção para 1 ano (12 meses)
+            let newPlan1Year = newPlanValue;
+            for (let i = 0; i < 12; i++) {
+                newPlan1Year = newPlan1Year - monthlyConsumption + newPlanValue;
+            }
+
+            // Injeção dos resultados processados no DOM
+            document.getElementById('current3Months').textContent = formatGB(current3Months);
+            document.getElementById('newPlan3Months').textContent = formatGB(Math.max(0, newPlan3Months));
+            document.getElementById('advantage3Months').innerHTML = calculateAdvantage(current3Months, Math.max(0, newPlan3Months));
+
+            document.getElementById('current6Months').textContent = formatGB(current6Months);
+            document.getElementById('newPlan6Months').textContent = formatGB(Math.max(0, newPlan6Months));
+            document.getElementById('advantage6Months').innerHTML = calculateAdvantage(current6Months, Math.max(0, newPlan6Months));
+
+            document.getElementById('current1Year').textContent = formatGB(current1Year);
+            document.getElementById('newPlan1Year').textContent = formatGB(Math.max(0, newPlan1Year));
+            document.getElementById('advantage1Year').innerHTML = calculateAdvantage(current1Year, Math.max(0, newPlan1Year));
+
+            // Exibe o painel com animação
+            resultsCard.classList.add('show');
+        }
+
+        // Interceptador do envio do formulário
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Previne recarregamento da página
+
+            // Coleta e tipagem dos dados inseridos
+            const currentPlan = parseFloat(document.getElementById('currentPlan').value);
+            const renewalDay = parseInt(document.getElementById('renewalDay').value);
+            const currentInternet = parseFloat(document.getElementById('currentInternet').value);
+            const newPlanValue = parseFloat(document.getElementById('newPlan').value);
+
+            // Validações de entrada de dados (Early Returns)
+            if (!renewalDay || renewalDay < 1 || renewalDay > 31) {
+                showError('Por favor, insira um dia de renovação válido (entre 1 e 31).');
+                resultsCard.classList.remove('show');
+                return;
+            }
+
+            if (currentInternet > currentPlan) {
+                showError('Aviso: A internet disponível atual não pode ser maior que o pacote total do plano.');
+                resultsCard.classList.remove('show');
+                return;
+            }
+
+            if (currentInternet < 0) {
+                showError('Erro: A internet disponível não pode ser um número negativo.');
+                resultsCard.classList.remove('show');
+                return;
+            }
+
+            // Estando tudo certo, prossegue com o cálculo
+            clearError();
+            calculateComparison(currentPlan, renewalDay, currentInternet, newPlanValue);
+        });
+
+        // Preenche o campo de "Dia da Renovação" com o dia de hoje por padrão, para facilitar o uso
+        const today = new Date();
+        document.getElementById('renewalDay').value = today.getDate();
+    </script>
+</body>
+</html>

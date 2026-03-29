@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Economia de Energia</title>
+    <style>
+        /* ==========================================================================
+           Reset Global e Variáveis Base
+           Garante consistência visual removendo margens padrão dos navegadores
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* Prioriza fontes nativas do sistema operacional para melhor performance */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================================================
+           Cabeçalho Principal (Header)
+           ========================================================================== */
+        header {
+            background: white;
+            padding: 20px 0;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #15803d;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+
+        .logo-text {
+            font-weight: bold;
+            font-size: 24px;
+            color: #111;
+        }
+
+        .logo-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ==========================================================================
+           Layout Principal
+           Divide a tela em duas colunas no desktop para parear o formulário com os resultados
+           ========================================================================== */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        /* ==========================================================================
+           Componentes: Cartões (Cards) e Formulários
+           ========================================================================== */
+        .simulator-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .simulator-card h2 {
+            font-size: 28px;
+            color: #111;
+            margin-bottom: 10px;
+        }
+
+        .simulator-card p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .form-group small {
+            display: block;
+            color: #999;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .currency-symbol {
+            position: absolute;
+            left: 16px;
+            font-size: 18px;
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px 14px 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        /* Feedback visual claro ao focar no campo de entrada (Acessibilidade) */
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #15803d;
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.1);
+        }
+
+        .discount-info {
+            background: #f0fdf4;
+            border-left: 4px solid #15803d;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        .discount-info strong {
+            color: #15803d;
+        }
+
+        .btn-simulate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+        }
+
+        .btn-simulate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(21, 128, 61, 0.4);
+        }
+
+        .btn-simulate:active {
+            transform: translateY(0);
+        }
+
+        /* ==========================================================================
+           Painel de Resultados e Animações
+           O painel inicia oculto ('display: none') e é exibido via JavaScript
+           ========================================================================== */
+        .results-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        /* Animação suave para melhorar a percepção de carregamento do resultado */
+        .results-card.show {
+            display: block;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-card h3 {
+            font-size: 20px;
+            color: #111;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .result-item {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid #15803d;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #15803d;
+        }
+
+        .result-value.annual {
+            font-size: 32px;
+        }
+
+        .result-description {
+            font-size: 13px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .summary-box p {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .summary-box .highlight {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .input-account {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* ==========================================================================
+           Estados de Validação (Mensagem de Erro)
+           ========================================================================== */
+        .error-message {
+            background: #fee2e2;
+            border-left: 4px solid #dc2626;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* ==========================================================================
+           Seções Informativas e Rodapé
+           ========================================================================== */
+        .info-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-top: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-section h3 {
+            font-size: 20px;
+            color: #111;
+            margin-bottom: 16px;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-list li:before {
+            content: "✓";
+            color: #15803d;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: -2px;
+        }
+
+        /* ==========================================================================
+           Responsividade (Mobile First Adaptations)
+           Reorganiza o grid para exibição em coluna única em telas menores
+           ========================================================================== */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .simulator-card,
+            .results-card {
+                padding: 24px;
+            }
+
+            .simulator-card h2 {
+                font-size: 24px;
+            }
+
+            .result-value {
+                font-size: 28px;
+            }
+
+            .result-value.annual {
+                font-size: 24px;
+            }
+
+            header {
+                margin-bottom: 24px;
+            }
+
+            body {
+                padding: 12px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #15803d;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-icon">💡</div>
+                <div>
+                    <div class="logo-text">EcoSimulador - Consultoria</div>
+                    <div class="logo-subtitle">Simulador de Economia de Energia</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            
+            <div class="simulator-card">
+                <h2>Simule Sua Economia</h2>
+                <p>Descubra quanto você pode economizar com a nossa solução de energia limpa.</p>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <div class="discount-info">
+                    <strong>Desconto Garantido:</strong> de 10% na sua conta de luz
+                </div>
+
+                <form id="simulatorForm">
+                    <div class="form-group">
+                        <label for="accountValue">Valor da Sua Conta de Luz</label>
+                        <div class="input-wrapper">
+                            <span class="currency-symbol">R$</span>
+                            <input 
+                                type="number" 
+                                id="accountValue" 
+                                placeholder="0,00" 
+                                step="0.01" 
+                                min="0" 
+                                required
+                                inputmode="decimal"
+                            >
+                        </div>
+                        <small>Insira o valor total da sua conta de luz mensal</small>
+                    </div>
+
+                    <button type="submit" class="btn-simulate">Simular Economia</button>
+                </form>
+
+                <div class="input-account" id="inputInfo" style="display: none;">
+                    <strong>Conta Informada:</strong> R$ <span id="displayValue">0,00</span>
+                </div>
+            </div>
+
+            <div class="results-card" id="resultsCard">
+                <h3>Sua Economia Estimada</h3>
+
+                <div class="result-item">
+                    <div class="result-label">💰 Desconto Mensal</div>
+                    <div class="result-value" id="monthlyDiscount">R$ 0,00</div>
+                    <div class="result-description">Economia que você terá a cada mês</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">📊 Desconto Anual</div>
+                    <div class="result-value annual" id="annualDiscount">R$ 0,00</div>
+                    <div class="result-description">Economia total em 12 meses</div>
+                </div>
+
+                <div class="result-item">
+                    <div class="result-label">📈 Desconto em 5 Anos</div>
+                    <div class="result-value annual" id="fiveYearsDiscount">R$ 0,00</div>
+                    <div class="result-description">Economia total em 60 meses</div>
+                </div>
+
+                <div class="summary-box">
+                    <p>Com a nossa consultoria, você economiza</p>
+                    <div class="highlight" id="summaryText">R$ 0,00 por ano</div>
+                    <p style="margin-top: 8px; font-size: 13px; color: #fbbf24;"><strong id="summaryFiveYears">R$ 0,00 em 5 anos</strong></p>
+                    <p style="margin-top: 12px; font-size: 12px;">sem investimento inicial</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>Como Funciona o Desconto?</h3>
+            <ul class="info-list">
+                <li>Você conecta sua conta de luz à nossa rede de energia</li>
+                <li>Nossas fazendas solares parceiras geram energia limpa</li>
+                <li>A energia é injetada na rede da sua distribuidora</li>
+                <li>Você pode receber 10% de desconto automático na sua conta</li>
+                <li>Sem investimento inicial, sem burocracia</li>
+                <li>Processo 100% digital e seguro</li>
+            </ul>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: white; padding: 40px; border-radius: 12px; text-align: center; margin-top: 40px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+            <h3 style="font-size: 24px; margin-bottom: 12px;">Pronto para Economizar?</h3>
+            <p style="margin-bottom: 24px; font-size: 16px; opacity: 0.95;">Fale com um de nossos consultores e comece sua jornada rumo à economia de energia</p>
+            <a href="#" target="_blank" style="display: inline-block; background: white; color: #15803d; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0, 0, 0, 0.3)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.2)';">💬 Falar com um Consultor</a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-bottom">
+            <p>Consultoria em Sustentabilidade e Energia</p>
+            <p>Projeto de Demonstração (Portfólio)</p>
+            <p>Desenvolvido por Adriano Luz - <a href="https://linkedin.com/in/adrianoluz-web" target="_blank">Linkedin</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Mapeamento dos elementos da DOM necessários para a interação
+        const form = document.getElementById('simulatorForm');
+        const accountInput = document.getElementById('accountValue');
+        const resultsCard = document.getElementById('resultsCard');
+        const monthlyDiscount = document.getElementById('monthlyDiscount');
+        const annualDiscount = document.getElementById('annualDiscount');
+        const fiveYearsDiscount = document.getElementById('fiveYearsDiscount');
+        const summaryText = document.getElementById('summaryText');
+        const errorMessage = document.getElementById('errorMessage');
+        const inputInfo = document.getElementById('inputInfo');
+        const displayValue = document.getElementById('displayValue');
+
+        // Regra de negócio: Taxa fixa de economia garantida ao cliente
+        const DISCOUNT_RATE = 0.10; 
+
+        /**
+         * Converte um número decimal em uma string formatada como moeda brasileira.
+         * Utiliza a API nativa Intl para garantir precisão e localização correta.
+         * * @param {number} value - O valor bruto do cálculo
+         * @returns {string} Valor formatado (ex: R$ 1.500,00)
+         */
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        /**
+         * Reseta o estado visual de erro do formulário.
+         */
+        function clearError() {
+            errorMessage.classList.remove('show');
+            errorMessage.textContent = '';
+        }
+
+        /**
+         * Exibe feedback de validação para o usuário.
+         * @param {string} message - A instrução ou alerta a ser exibido
+         */
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+        }
+
+        /**
+         * Processa o valor de entrada e projeta a economia no tempo.
+         * Atualiza o DOM para refletir os novos cálculos.
+         * * @param {number} accountValue - Valor total atual da fatura mensal do usuário
+         */
+        function calculateDiscount(accountValue) {
+            // Regra de validação: Previne cálculos negativos ou zerados que quebrariam a lógica
+            if (accountValue <= 0) {
+                showError('Por favor, insira um valor maior que zero para a simulação.');
+                resultsCard.classList.remove('show');
+                inputInfo.style.display = 'none';
+                return;
+            }
+
+            clearError();
+
+            // Lógica de cálculo das projeções temporais
+            const monthly = accountValue * DISCOUNT_RATE;
+            const annual = monthly * 12;
+            const fiveYears = annual * 5;
+
+            // Injeção de dados formatados na interface
+            monthlyDiscount.textContent = formatCurrency(monthly);
+            annualDiscount.textContent = formatCurrency(annual);
+            fiveYearsDiscount.textContent = formatCurrency(fiveYears);
+            summaryText.textContent = `${formatCurrency(annual)} por ano`;
+            document.getElementById('summaryFiveYears').textContent = `${formatCurrency(fiveYears)} em 5 anos`;
+
+            // Mantém um registro visual do valor base inserido pelo usuário
+            displayValue.textContent = formatCurrency(accountValue);
+            inputInfo.style.display = 'block';
+
+            // Aciona a animação CSS para exibir os resultados de forma fluida
+            resultsCard.classList.add('show');
+        }
+
+        // Intercepta o envio do formulário para processar o cálculo sem recarregar a página (SPA behavior)
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const value = parseFloat(accountInput.value);
+            calculateDiscount(value);
+        });
+
+        // Cria uma experiência "Reativa": atualiza os resultados instantaneamente enquanto o usuário digita
+        accountInput.addEventListener('input', function() {
+            if (this.value) {
+                const value = parseFloat(this.value);
+                if (value > 0) {
+                    calculateDiscount(value);
+                }
+            }
+        });
+
+        // Melhora a formatação visual do input (adiciona os centavos ,00) quando o usuário tira o foco do campo
+        accountInput.addEventListener('blur', function() {
+            if (this.value) {
+                const value = parseFloat(this.value);
+                this.value = value.toFixed(2);
+            }
+        });
+    </script>
+</body>
+</html>
